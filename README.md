@@ -35,6 +35,3 @@ MONGO_DB=hrone_assignment
 python sample_seed.py
 uvicorn app.main:app --port 8000 --reload
 ```
-## Submit
-A public Git repository with `app/main.py`, `requirements.txt`, `REVIEW.md`, `DECISIONS.md` and a short `README.md`.
-No `.env`, no secrets, no Dockerfile.
