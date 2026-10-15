@@ -1,0 +1,28 @@
+Part A — Starter Code Review
+The table below is a working draft based on the assignment contract and code excerpts reviewed during development. Verify every row against the original starter and final app/main.py before submitting.
+#	Where (function / line)	What is wrong	How you'd notice it (test, input, or symptom)	How you fixed it
+1	create_indexes / startup	An invalid startup hook prevents the app from starting; missing indexes weaken uniqueness and query performance.	Start from a clean clone, call GET /health, and inspect MongoDB indexes.	Use a valid FastAPI startup hook and create required indexes idempotently.
+2	MongoDB configuration	The app must use environment-provided MONGO_URI and MONGO_DB, rather than relying on hard-coded connection details.	Set test environment values and verify which database is selected.	Read both values from environment variables, allowing injected values to take priority.
+3	compute_late_minutes	Comparing punch-in to shift start on the same date mishandles overnight shifts.	Test a shift crossing midnight and a punch-in after midnight.	Resolve the correct shift-start date before calculating lateness.
+4	compute_late_minutes	The 10-minute grace boundary and whole-minute flooring must match the contract exactly.	Test exactly 10 minutes late and 10 minutes plus a few seconds.	Apply the strict > 10 minutes rule and floor whole minutes.
+5	compute_work_hours	Built-in round() uses ties-to-even and may disagree with the required ROUND_HALF_UP rounding.	Test a duration whose hour value is halfway between hundredths.	Use Decimal with ROUND_HALF_UP.
+6	compute_overtime	Using shift end on the attendance date mishandles overnight shifts; overtime must only count when it reaches 30 minutes.	Test overnight shift end and punch-outs 29 and 30 minutes later.	Resolve the correct shift-end date, floor minutes, and apply the 30-minute minimum.
+7	POST /attendance/punch-in	An existence check followed by insert is not safe against simultaneous requests.	Send concurrent punch-ins for the same employee/date.	Enforce a unique (emp_code, date) index and translate duplicate-key errors to 409.
+8	POST /attendance/punch-out	Separate read/check/update operations can allow two punch-outs to race or select the wrong day's record.	Send simultaneous punch-outs and test an employee with multiple attendance dates.	Use the intended employee/date and an atomic conditional update; return 409 to a losing request.
+9	GET /employees and GET /attendance	Pagination must validate bounds and calculate total using the same filters as the returned page.	Try page=0, page_size=101, and a filter with no matches.	Validate bounds; apply filters, sorting, skip, and limit in MongoDB.
+10	Timestamp validation/conversion	Accepting seconds, strings, floats, or out-of-range values can create incorrect instants; API instants must be epoch milliseconds.	Submit invalid timestamp types or a seconds-based timestamp.	Validate integer epoch milliseconds and convert between API values and UTC BSON datetimes at the boundary.
+11	PATCH /attendance/{emp_code}/{date}	Regularization must recompute derived fields and preserve history during concurrent corrections.	Update a record and inspect derived values/history; then send concurrent updates.	Recompute derived fields and use a conditional atomic update that appends history; reject stale updates.
+12	Analytics pipelines	Aggregations can miss employees without logs or mishandle join dates, weekdays, status values, and half-days.	Test a no-log employee, mid-month joiner, weekend record, and half-day.	Aggregate in MongoDB and apply the contract's employee/date/status rules.
+13	Late leaderboard	Ranking by array position or limiting before ranking gives incorrect competition ranks and cutoff tie handling.	Use totals such as 100, 80, 80, 60 with a limit cutting through the tie.	Use competition ranking (1, 2, 2, 4), sort ties by emp_code, and apply limit after ranking.
+14	Department trend	Omitting days without records loses weekends/gaps; computing the moving average in Python violates the pipeline requirement.	Request a range containing weekends and dates with no logs.	Densify dates in MongoDB and calculate the moving average in the aggregation pipeline.
+15	Admin explain endpoint	Explaining a simplified query does not prove that the actual endpoint's filters, sort, and pagination use indexes.	Compare query shapes and inspect IXSCAN/COLLSCAN in execution stats. Build explain commands from the same relevant filters and query/pipeline as the endpoint.
+
+
+Reviewed and not considered defects
+- A list endpoint returning 200 OK with an empty list is valid when no records match; it differs from a missing employee in an operation that requires that employee.
+- MongoDB's internal _id may exist in storage, but it should not be used as the public employee identity or attendance-record identifier.
+- Storing instants as UTC BSON datetimes is correct; epoch-millisecond conversion and IST attendance-date rules belong at the API/business-rule boundary.
+- A unique compound index on (emp_code, date) is intentional because an attendance record is identified by that pair and the index also supports lookups beginning with emp_code.
+
+Final verification note
+Before submission, compare each row with the original starter and the final app/main.py. Remove or edit any row that was not a defect in the supplied starter or was not actually fixed. The assignment expects concrete findings from your review, not an unverified generic checklist.
