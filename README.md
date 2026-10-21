@@ -74,8 +74,6 @@ git clone https://github.com/Akash-paira/Employee_Attendance.git
 cd Employee_Attendance
 ```
 
-Replace the placeholders with your actual GitHub repository URL and project folder name.
-
 ### 2. Create a Virtual Environment
 
 **Windows:**
