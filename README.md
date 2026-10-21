@@ -70,8 +70,8 @@ Before running the project, ensure you have installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone `https://github.com/Akash-paira/Employee_Attendance.git`
-cd `Employee_Attendance`
+git clone https://github.com/Akash-paira/Employee_Attendance.git
+cd Employee_Attendance
 ```
 
 Replace the placeholders with your actual GitHub repository URL and project folder name.
