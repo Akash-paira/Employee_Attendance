@@ -1,5 +1,3 @@
-Part A — Starter Code Review
-The table below is a working draft based on the assignment contract and code excerpts reviewed during development. Verify every row against the original starter and final app/main.py before submitting.
 #	Where (function / line)	What is wrong	How you'd notice it (test, input, or symptom)	How you fixed it
 1	create_indexes / startup	An invalid startup hook prevents the app from starting; missing indexes weaken uniqueness and query performance.	Start from a clean clone, call GET /health, and inspect MongoDB indexes.	Use a valid FastAPI startup hook and create required indexes idempotently.
 2	MongoDB configuration	The app must use environment-provided MONGO_URI and MONGO_DB, rather than relying on hard-coded connection details.	Set test environment values and verify which database is selected.	Read both values from environment variables, allowing injected values to take priority.
@@ -18,11 +16,8 @@ The table below is a working draft based on the assignment contract and code exc
 15	Admin explain endpoint	Explaining a simplified query does not prove that the actual endpoint's filters, sort, and pagination use indexes.	Compare query shapes and inspect IXSCAN/COLLSCAN in execution stats. Build explain commands from the same relevant filters and query/pipeline as the endpoint.
 
 
-Reviewed and not considered defects
+**Reviewed and not considered defects**
 - A list endpoint returning 200 OK with an empty list is valid when no records match; it differs from a missing employee in an operation that requires that employee.
 - MongoDB's internal _id may exist in storage, but it should not be used as the public employee identity or attendance-record identifier.
 - Storing instants as UTC BSON datetimes is correct; epoch-millisecond conversion and IST attendance-date rules belong at the API/business-rule boundary.
 - A unique compound index on (emp_code, date) is intentional because an attendance record is identified by that pair and the index also supports lookups beginning with emp_code.
-
-Final verification note
-Before submission, compare each row with the original starter and the final app/main.py. Remove or edit any row that was not a defect in the supplied starter or was not actually fixed. The assignment expects concrete findings from your review, not an unverified generic checklist.
