@@ -140,6 +140,6 @@ See [`DECISIONS.md`](DECISIONS.md) for the technical decisions and their rationa
 ## Notes
 
 - Configure MongoDB using environment variables before running the application.
-- Attendance calculations must follow the defined shift, grace-period, rounding, and overtime rules.
-- API timestamps must follow the specified epoch-milliseconds contract.
+- Attendance calculations follows or must follow the defined shift, grace-period, rounding, and overtime rules.
+- API timestamps follows or must follow the specified epoch-milliseconds contract.
 - Database indexes and atomic updates help maintain data integrity under concurrent requests.
